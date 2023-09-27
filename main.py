@@ -11,15 +11,24 @@ DESC = "description"
 EXPECTED = "expected"
 
 
-class Vertex(dict):
+class Vertex:
     """
     A Vertex class
     """
 
+    def __init__(self, name: str, _from: list[str] = None) -> None:
+        self.name = name
+        """
+        Name of the Vertex, used as an identifier when printing.
+        """
+
+        self._from: list[str] = [] if _from is None else _from
+        """
+        List of the names of all the vertices that points too this Vertex
+        """
+
     def __str__(self) -> str:
-        if NAME in self.keys():
-            return self[NAME]
-        return super().__str__()
+        return self.name
 
 
 class Graph(list):
@@ -28,75 +37,44 @@ class Graph(list):
     """
 
     def __str__(self) -> str:
-        return ", ".join({str(e[NAME]) for e in self})
+        if isinstance(self[0], Vertex):
+            return ", ".join({str(e.name) for e in self})
+        return super().__str__()
 
 
 
-
-def create_vertex(name: str, neighbours: list[str] = None) -> Vertex:
-    """Creates a vertex dict
-
-    Args:
-        name (str): Name of the vertex
-        neighbours (list[str]): List of the names of the neighbouring nodes.
-        In this case, a neighbour, are nodes this vertex is pointing too.
-
-    Returns:
-        Vertex: Vertex instance
-    """
-    return {
-        NAME: name,
-        NEIGHBOURS: [] if neighbours is None else neighbours
-    }
 
 TESTS = [
     {
         NAME: "Base Case 1",
         DESC: "One vertex",
-        VERTICES: [create_vertex("A")],
+        VERTICES: [Vertex("A")],
         EXPECTED: "A"
     },
     {
         NAME: "Base Case 2",
         DESC: "All vertices connected as a linked list",
         VERTICES: [
-            create_vertex(
+            Vertex(
                 ascii_uppercase[i], [ascii_uppercase[i + 1]]
                 ) for i in range(4)
-            ] + [create_vertex("E", ["A"])],
+            ] + [Vertex("E", ["A"])],
         EXPECTED: "A B C D E"
     },
     {
         NAME: "Graph",
         DESC: "A DAG", #Taken from https://www.geeksforgeeks.org/topological-sorting/"
         VERTICES: [
-            create_vertex("5", ["2", "0"]),
-            create_vertex("4", ["0", "1"]),
-            create_vertex("2", ["3"]),
-            create_vertex("0"),
-            create_vertex("3", ["1"]),
-            create_vertex("1")
+            Vertex("5", ["2", "0"]),
+            Vertex("4", ["0", "1"]),
+            Vertex("2", ["3"]),
+            Vertex("0"),
+            Vertex("3", ["1"]),
+            Vertex("1")
             ],
         EXPECTED: "5 4 2 3 1 0"
     }
 ]
-
-def calculate_degrees(graph: Graph) -> dict[Vertex, int]:
-    """Calculates the in-degrees to each vertex in the given graph
-
-    Args:
-        graph (Graph): Graph
-
-    Returns:
-        dict[Vertex, int]: Dict of the calulations
-    """
-    dag = {n[NAME]: 0 for n in graph}
-
-    for vertex in graph: # N
-        for sub_vertex in vertex[NEIGHBOURS]: # N
-            dag[sub_vertex] += 1 # 1
-
-    return dag
 
 
 def topological_ordering(graph: Graph) -> list[Vertex]:
@@ -108,10 +86,10 @@ def topological_ordering(graph: Graph) -> list[Vertex]:
     Returns:
         list[Vertex]: vertices
     """
-    dag = calculate_degrees(graph) # N²
-    vertices = graph.copy()
-    vertices.sort(key = lambda x: dag[x[NAME]] if x[NAME] in dag.keys() else 0) # N log N
-    return vertices
+    vertices = graph.copy() # N, No reason to have this, other than that I dont like side-effects
+    vertices = [(v.name, len(v._from)) for v in graph] # N
+    vertices.sort(key = lambda x: x[1]) # N log N
+    return vertices[::-1]
 
 
 def test(test_case: dict) -> str:
@@ -127,7 +105,7 @@ def test(test_case: dict) -> str:
     graph = Graph(test_case[VERTICES])
     vertices = topological_ordering(graph)
 
-    pretty_verticies = str(Graph(vertices))
+    pretty_verticies = ", ".join([e[0] for e in vertices])
 
     print(f"DESCRIPTION:\n{test_case[DESC]}\n")
     res = "[]" + "-" * (len(pretty_verticies) + 17) + "[]\n"

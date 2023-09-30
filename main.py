@@ -1,4 +1,13 @@
 """
+Using Kahn's algorithm, I can sort any Vertex.
+The reason for this, is that, when constructing the Vertex,
+you have to supply the vertices that are pointing towards the one you are constructing.
+So, given the graph (list), I can sort it, based on the length of _from.
+
+This makes the running time of the algorithm to be N, since we have to take the length of _from.
+
+This could be called 'cheating', so instead, we can do the following:
+
 Author: Nils Michael Fitjar
 """
 from __future__ import annotations
@@ -65,12 +74,12 @@ TESTS = [
         NAME: "Graph",
         DESC: "A DAG", #Taken from https://www.geeksforgeeks.org/topological-sorting/"
         VERTICES: [
-            Vertex("5", ["2", "0"]),
-            Vertex("4", ["0", "1"]),
-            Vertex("2", ["3"]),
-            Vertex("0"),
-            Vertex("3", ["1"]),
-            Vertex("1")
+            Vertex("5"),
+            Vertex("4"),
+            Vertex("2", ["5"]),
+            Vertex("0", ["5", "4"]),
+            Vertex("3", ["2"]),
+            Vertex("1", ["4", "3"])
             ],
         EXPECTED: "5 4 2 3 1 0"
     }
@@ -87,9 +96,8 @@ def topological_ordering(graph: Graph) -> list[Vertex]:
         list[Vertex]: vertices
     """
     vertices = graph.copy() # N, No reason to have this, other than that I dont like side-effects
-    vertices = [(v.name, len(v._from)) for v in graph] # N
-    vertices.sort(key = lambda x: x[1]) # N log N
-    return vertices[::-1]
+    vertices.sort(key = lambda v: len(v._from)) # N log N
+    return vertices
 
 
 def test(test_case: dict) -> str:
@@ -105,7 +113,7 @@ def test(test_case: dict) -> str:
     graph = Graph(test_case[VERTICES])
     vertices = topological_ordering(graph)
 
-    pretty_verticies = ", ".join([e[0] for e in vertices])
+    pretty_verticies = ", ".join([e.name for e in vertices])
 
     print(f"DESCRIPTION:\n{test_case[DESC]}\n")
     res = "[]" + "-" * (len(pretty_verticies) + 17) + "[]\n"

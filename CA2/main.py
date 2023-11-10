@@ -1,14 +1,45 @@
+"""
+The function levenshtein_distance, takes in two words,
+and measures how "far" one string is from another, by
+taking into account the number of insertions, deletitions and wrong words.
+
+We do this, by using an iterative technique, that uses a nested-list.
+
+First we take the length of both strings, giving us the dimensions of the list.
+
+We then initalize the nested-list, putting 0 everywher.
+Then, for the top-most row, and left most column, we put in 1, 2, ...
+As the cost of traversing the list.
+
+Then we iterate over the strings, comparing each pair of chars.
+
+If they are equal, no operation is needed.
+
+If they are not equal, we calculate the minimum between inserting, deleting or substituting the char.
+
+We can do this, because we can visualise it as the cost of moving between rows and columns in the list.
+
+The final result will be in the bottom right of the nested list.
+
+Since we are comparing each char, big O notation, is O(n^2), if the strings have the same length, if not, its O(n * m), where n is one string, and m is the other.
+"""
+
 INSERT = 1
 DELETE = 2
 WRONG = 1
 
 
-INSERT = 1
-DELETE = 2
-WRONG = 1
+def levenshtein_distance(str1: str, str2: str) -> int:
+    """Measusres the similiarity between two strings,
+    by taking into account the number of insertions, deletitions and wrong words, needed to transform str1 into str2
 
+    Args:
+        str1 (str): Starting word
+        str2 (str): End word
 
-def levenshtein_distance(str1, str2):
+    Returns:
+        int: Cost of transforming str1 to str2
+    """
     m, n = len(str1), len(str2)
 
     dp = [[0] * (n + 1) for _ in range(m + 1)]
@@ -33,11 +64,3 @@ def levenshtein_distance(str1, str2):
     return dp[m][n]
 
 
-print(
-    f"Levenshtein distance: {levenshtein_distance('INTENTION', 'EXECUTION')}"
-)
-print(f"Levenshtein distance: {levenshtein_distance('MASS', 'PASS')}")
-print(f"Levenshtein distance: {levenshtein_distance('PASS', 'PASS')}")
-print(f"Levenshtein distance: {levenshtein_distance('NILS', 'MICHAEL')}")
-print(f"Levenshtein distance: {levenshtein_distance('PASS', 'PAS')}")
-print(f"Levenshtein distance: {levenshtein_distance('PASS', 'PASSS')}")
